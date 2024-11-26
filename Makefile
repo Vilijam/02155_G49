@@ -1,7 +1,7 @@
 
 all:
-	javac IsaSim.java
-	java IsaSim
+	javac Simulator.java  Memory.java Registers.java
+	java Simulator
 
 clean:
 	rm *.class

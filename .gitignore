@@ -24,3 +24,6 @@ hs_err_pid*
 replay_pid*
 
 test.java
+.vscode/settings.json
+
+bin/

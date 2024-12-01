@@ -20,7 +20,7 @@ public class Simulator {
         Registers reg = new Registers(dataMem);
 
         try {
-            programMem = Files.readAllBytes(Paths.get(inputFile));
+            programMem  = Files.readAllBytes(Paths.get(inputFile));
             boolean notEOF = true;
             
             int instr;
@@ -97,7 +97,7 @@ public class Simulator {
                             case 0b001: System.out.println("slli"); break;
                             case 0b010: System.out.println("slti"); break;
                             case 0b011: System.out.println("sltiu"); break;
-                            case 0b100: System.out.println("xori"); break;
+                            case 0b100: System.out.println("xori"); reg.writeWord(rd, reg.readWord(rs1) ^ iFormat_Imm); break;
                             case 0b101:
                                 switch (funct7) {
                                     case 0b0000000: System.out.println("srli"); break;
@@ -105,8 +105,8 @@ public class Simulator {
                                     default: System.out.println("Unknown shift immediate"); break;
                                 }
                                 break;
-                            case 0b110: System.out.println("ori"); break;
-                            case 0b111: System.out.println("andi"); break;
+                            case 0b110: System.out.println("ori"); reg.writeWord(rd, reg.readWord(rs1) | iFormat_Imm); break;
+                            case 0b111: System.out.println("andi"); reg.writeWord(rd, reg.readWord(rs1) & iFormat_Imm); break;
                             default: System.out.println("Unknown immediate instruction"); break;
                         }
                         break;
@@ -129,14 +129,14 @@ public class Simulator {
                             case 0b000:
                                 switch (funct7) {
                                     case 0b0000000: System.out.println("add"); reg.writeWord(rd, reg.readWord(rs1) + reg.readWord(rs2)); break;
-                                    case 0b0100000: System.out.println("sub"); break;
+                                    case 0b0100000: System.out.println("sub"); reg.writeWord(rd, reg.readWord(rs1) - reg.readWord(rs2)); break;
                                     default: System.out.println("Unknown arithmetic operation"); break;
                                 }
                                 break;
-                            case 0b001: System.out.println("sll"); break;
+                            case 0b001: System.out.println("sll"); reg.writeWord(rd, reg.readWord(rs1) << reg.readWord(rs2)); break;
                             case 0b010: System.out.println("slt"); break;
                             case 0b011: System.out.println("sltu"); break;
-                            case 0b100: System.out.println("xor"); break;
+                            case 0b100: System.out.println("xor"); reg.writeWord(rd, reg.readWord(rs1) ^ reg.readWord(rs2)); break;
                             case 0b101:
                                 switch (funct7) {
                                     case 0b0000000: System.out.println("srl"); break;
@@ -144,8 +144,8 @@ public class Simulator {
                                     default: System.out.println("Unknown shift operation"); break;
                                 }
                                 break;
-                            case 0b110: System.out.println("or"); break;
-                            case 0b111: System.out.println("and"); break;
+                            case 0b110: System.out.println("or"); reg.writeWord(rd, reg.readWord(rs1) | reg.readWord(rs2)); break;
+                            case 0b111: System.out.println("and"); reg.writeWord(rd, reg.readWord(rs1) & reg.readWord(rs2)); break;
                             default: System.out.println("Unknown R-type instruction"); break;
                         }
                         break;
@@ -204,7 +204,8 @@ public class Simulator {
             for (int i = 0; i < 32; ++i) {
                 System.out.println("Value at adress " + i + ":");
                 System.out.println(reg.readWord(i));
-            }   
+                //System.out.println(Integer.toBinaryString(reg.readWord(i)));
+            }
 
         } catch (IOException ex) {
             ex.printStackTrace();

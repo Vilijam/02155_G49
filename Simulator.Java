@@ -59,7 +59,11 @@ public class Simulator {
                 rs2 = (instr >> 20) & 0x1f;           // matching 0000 0001 1111 0000  0000 0000 0000 0000
                 funct7 = (instr >> 25 ) & 0x7f;       // matching 1111 1110 0000 0000  0000 0000 0000 0000
                 // missing immediates
-                iFormat_Imm = (instr >> 20 ) & 0xfff; // matching 1111 1111 1111 0000  0000 0000 0000 0000
+                if (instr < 0) { // extending sign
+                    iFormat_Imm = (instr >> 20) | 0xfffff000; 
+                } else {
+                    iFormat_Imm = (instr >> 20) & 0xfff; 
+                }
 
                 //printInstruction(opcode, rd, funct3, rs1, rs2, funct7, iFormat_Imm);
 

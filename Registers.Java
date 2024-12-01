@@ -13,12 +13,14 @@ class Registers {
     }
 
     public int readWord(int index) {
+        // Multiplying by 4 to get the word address 
+        // e.g. x5 is the address for the 5th word but the 20th byte
         return bytesToWord(index * 4, reg);
     }
 
     public void writeWord(int index, int value) {
-        if (index != 0) { // x0 is always 0
-        index = index * 4; // e.g. x5 is the adress for the 5th word but the 20th byte
+        if (index != 0) { // x0 is always 0. Logic here might be bad? Could e.g. lh load into reg[2]?
+        index = index * 4;
             reg[index]      = (byte) value;
             reg[index + 1]  = (byte) (value >> 8);
             reg[index + 2]  = (byte) (value >> 16);
@@ -65,23 +67,14 @@ class Registers {
             ( 0x0000FF00 & (dataMem[memAddrs + 1] << 8) )
         );
     }
-    
-    public void lui(int regAddrs, int value) {
-        writeWord(regAddrs, value << 12);
-    }
-
-    public void addi(int regAddrs, int value) {
-        writeWord(regAddrs, value);
-    }
-
-    public void add(int regAddrs, int value) {
-        writeWord(regAddrs, value);
-    }
 
     static int bytesToWord(int index, byte[] mem) {
         int word = 0;
 
-        word = (mem[index] & 0x000000FF) | ((mem[index + 1] << 8) & 0x0000FF00) | ((mem[index + 2] << 16) & 0x00FF0000) | ((mem[index + 3] << 24) & 0xFF000000);
+        word = (mem[index] & 0x000000FF) 
+            | ((mem[index + 1] <<  8) & 0x0000FF00) 
+            | ((mem[index + 2] << 16) & 0x00FF0000) 
+            | ((mem[index + 3] << 24) & 0xFF000000);
 
         return word;
     }

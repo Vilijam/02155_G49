@@ -59,13 +59,22 @@ public class Simulator {
                 rs2 = (instr >> 20) & 0x1f;           // matching 0000 0001 1111 0000  0000 0000 0000 0000
                 funct7 = (instr >> 25 ) & 0x7f;       // matching 1111 1110 0000 0000  0000 0000 0000 0000
                 // missing immediates
+
+                // What is Java's default sign extension? casting byte to int does ext. sign.
+
                 if (instr < 0) { // extending sign
                     iFormat_Imm = (instr >> 20) | 0xfffff000; 
                 } else {
                     iFormat_Imm = (instr >> 20) & 0xfff; 
                 }
 
-                //printInstruction(opcode, rd, funct3, rs1, rs2, funct7, iFormat_Imm);
+                if (instr < 0) { // extending sign
+                    uFormat_Imm = (instr >> 12) | 0xfff00000; 
+                } else {
+                    uFormat_Imm = (instr >> 12) & 0xfffff; 
+                }
+
+                //printInstruction(opcode, rd, funct3, rs1, rs2, funct7, iFormat_Imm, uFormat_Imm);
 
                 /*
                     The Switch Statement
@@ -84,7 +93,7 @@ public class Simulator {
 
                     case 0b0010011: // Immediate instructions
                         switch (funct3) {
-                            case 0b000: System.out.println("addi"); reg.addi(rd, reg.readWord(rs1) + iFormat_Imm); break;
+                            case 0b000: System.out.println("addi"); reg.writeWord(rd, reg.readWord(rs1) + iFormat_Imm); break;
                             case 0b001: System.out.println("slli"); break;
                             case 0b010: System.out.println("slti"); break;
                             case 0b011: System.out.println("sltiu"); break;
@@ -119,7 +128,7 @@ public class Simulator {
                         switch (funct3) {
                             case 0b000:
                                 switch (funct7) {
-                                    case 0b0000000: System.out.println("add"); reg.addi(rd, reg.readWord(rs1) + reg.readWord(rs2)); break;
+                                    case 0b0000000: System.out.println("add"); reg.writeWord(rd, reg.readWord(rs1) + reg.readWord(rs2)); break;
                                     case 0b0100000: System.out.println("sub"); break;
                                     default: System.out.println("Unknown arithmetic operation"); break;
                                 }
@@ -143,6 +152,7 @@ public class Simulator {
 
                     case 0b0110111: // U-type instruction
                         System.out.println("lui");
+                        reg.writeWord(rd, (uFormat_Imm << 12)); 
                         break;
 
                     case 0b1100011: // Branch instructions
@@ -190,13 +200,11 @@ public class Simulator {
                 Termination
             */
 
+            // Print register contents
             for (int i = 0; i < 32; ++i) {
                 System.out.println("Value at adress " + i + ":");
                 System.out.println(reg.readWord(i));
             }   
-
-
-
 
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -205,14 +213,27 @@ public class Simulator {
     }
 
     static int bytesToWord(int index, byte[] mem) {
+        /*
+            Collects the byte at given index in
+             given memory and the 3 subsequent bytes into a word.
+             Also, flips endianness. 
+             The first byte in memory ends as least significant byte.
+
+            The & operator converts byte to int and extends sign.
+             Sign extension is counteracted.
+        */
+
         int word = 0;
 
-        word = (mem[index] & 0x000000FF) | ((mem[index + 1] << 8) & 0x0000FF00) | ((mem[index + 2] << 16) & 0x00FF0000) | ((mem[index + 3] << 24) & 0xFF000000);
+        word = (mem[index] & 0x000000FF) 
+            | ((mem[index + 1] <<  8) & 0x0000FF00) 
+            | ((mem[index + 2] << 16) & 0x00FF0000) 
+            | ((mem[index + 3] << 24) & 0xFF000000);
 
         return word;
     }
 
-    static void printInstruction(int opcode, int rd, int funct3, int rs1, int rs2, int funct7, int iFormat_Imm) {
+    static void printInstruction(int opcode, int rd, int funct3, int rs1, int rs2, int funct7, int iFormat_Imm, int uFormat_Imm) {
         System.out.println("Leading zeroes not printed!");
         
         System.out.println("opcode: \n" +       Integer.toBinaryString(opcode));
@@ -222,6 +243,7 @@ public class Simulator {
         System.out.println("rs2: \n" +          Integer.toBinaryString(rs2));
         System.out.println("funct7: \n" +       Integer.toBinaryString(funct7));
         System.out.println("iFormat_Imm: \n" +  Integer.toBinaryString(iFormat_Imm));
+        System.out.println("uFormat_Imm: \n" +  Integer.toBinaryString(uFormat_Imm));
     }
 
 }

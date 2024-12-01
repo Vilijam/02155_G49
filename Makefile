@@ -1,6 +1,6 @@
 
 all:
-	javac Simulator.java  Memory.java Registers.java
+	javac Simulator.java Memory.java Registers.java
 	java Simulator
 
 clean:

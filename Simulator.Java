@@ -2,10 +2,9 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
-/**
- * Copy one file to another using low level byte streams, one byte at a time.
- * @author www.codejava.net
- */
+
+
+
 public class Simulator {
 
     public static void main(String[] args) {
@@ -17,6 +16,8 @@ public class Simulator {
 
         String inputFile = args[0];
         byte[] programMem;
+        byte[] dataMem = new byte[1024];
+        Registers reg = new Registers(dataMem);
 
         try {
             programMem = Files.readAllBytes(Paths.get(inputFile));
@@ -65,22 +66,21 @@ public class Simulator {
                 /*
                     The Switch Statement
                 */
-
                 switch (opcode) {
                     case 0b0000011: // Load instructions
                         switch (funct3) {
-                            case 0b000: System.out.println("lb"); break;
-                            case 0b001: System.out.println("lh"); break;
-                            case 0b010: System.out.println("lw"); break;
-                            case 0b100: System.out.println("lbu"); break;
-                            case 0b101: System.out.println("lhu"); break;
+                            case 0b000: System.out.println("lb"); reg.lb(rd, reg.readWord(rs1) + iFormat_Imm); break;
+                            case 0b001: System.out.println("lh"); reg.lh(rd, reg.readWord(rs1) + iFormat_Imm); break;
+                            case 0b010: System.out.println("lw"); reg.lw(rd, reg.readWord(rs1) + iFormat_Imm); break;
+                            case 0b100: System.out.println("lbu"); reg.lbu(rd, reg.readWord(rs1) + iFormat_Imm); break;
+                            case 0b101: System.out.println("lhu"); reg.lhu(rd, reg.readWord(rs1) + iFormat_Imm); break;
                             default: System.out.println("Unknown load instruction"); break;
                         }
                         break;
 
                     case 0b0010011: // Immediate instructions
                         switch (funct3) {
-                            case 0b000: System.out.println("addi"); break;
+                            case 0b000: System.out.println("addi"); reg.addi(rd, reg.readWord(rs1) + iFormat_Imm); break;
                             case 0b001: System.out.println("slli"); break;
                             case 0b010: System.out.println("slti"); break;
                             case 0b011: System.out.println("sltiu"); break;
@@ -115,7 +115,7 @@ public class Simulator {
                         switch (funct3) {
                             case 0b000:
                                 switch (funct7) {
-                                    case 0b0000000: System.out.println("add"); break;
+                                    case 0b0000000: System.out.println("add"); reg.addi(rd, reg.readWord(rs1) + reg.readWord(rs2)); break;
                                     case 0b0100000: System.out.println("sub"); break;
                                     default: System.out.println("Unknown arithmetic operation"); break;
                                 }
@@ -181,6 +181,19 @@ public class Simulator {
                 pc = pc + 4;
             
             }
+
+            /*
+                Termination
+            */
+
+            for (int i = 0; i < 32; ++i) {
+                System.out.println("Value at adress " + i + ":");
+                System.out.println(reg.readWord(i));
+            }   
+
+
+
+
         } catch (IOException ex) {
             ex.printStackTrace();
         }

@@ -63,6 +63,7 @@ public class Simulator {
                 // missing immediates
 
                 // What is Java's default sign extension? casting byte to int does ext. sign.
+                // Java's >> does preserve sign. Could refactor...
 
                 if (instr < 0) { // extending sign
                     iFormat_Imm = (instr >> 20) | 0xfffff000; 
@@ -96,14 +97,14 @@ public class Simulator {
                     case 0b0010011: // Immediate instructions
                         switch (funct3) {
                             case 0b000: System.out.println("addi"); reg.writeWord(rd, reg.readWord(rs1) + iFormat_Imm); break;
-                            case 0b001: System.out.println("slli"); break;
-                            case 0b010: System.out.println("slti"); break;
-                            case 0b011: System.out.println("sltiu"); break;
+                            case 0b001: System.out.println("slli"); reg.writeWord(rd, reg.readWord(rs1) << iFormat_Imm); break;
+                            case 0b010: System.out.println("slti"); reg.writeWord(rd, (reg.readWord(rs1) < iFormat_Imm) ? 1 : 0); break;
+                            case 0b011: System.out.println("sltiu"); reg.writeWord(rd, (Integer.compareUnsigned(reg.readWord(rs1), iFormat_Imm) < 0) ? 1 : 0); break;
                             case 0b100: System.out.println("xori"); reg.writeWord(rd, reg.readWord(rs1) ^ iFormat_Imm); break;
                             case 0b101:
                                 switch (funct7) {
-                                    case 0b0000000: System.out.println("srli"); break;
-                                    case 0b0100000: System.out.println("srai"); break;
+                                    case 0b0000000: System.out.println("srli"); reg.writeWord(rd, reg.readWord(rs1) >>> iFormat_Imm); break;
+                                    case 0b0100000: System.out.println("srai"); reg.writeWord(rd, reg.readWord(rs1) >>  iFormat_Imm); break;
                                     default: System.out.println("Unknown shift immediate"); break;
                                 }
                                 break;
@@ -136,13 +137,13 @@ public class Simulator {
                                 }
                                 break;
                             case 0b001: System.out.println("sll"); reg.writeWord(rd, reg.readWord(rs1) << reg.readWord(rs2)); break;
-                            case 0b010: System.out.println("slt"); break;
-                            case 0b011: System.out.println("sltu"); break;
+                            case 0b010: System.out.println("slt"); reg.writeWord(rd, (reg.readWord(rs1) < reg.readWord(rs2)) ? 1 : 0); break;
+                            case 0b011: System.out.println("sltu"); reg.writeWord(rd, (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) < 0) ? 1 : 0); break;
                             case 0b100: System.out.println("xor"); reg.writeWord(rd, reg.readWord(rs1) ^ reg.readWord(rs2)); break;
                             case 0b101:
                                 switch (funct7) {
-                                    case 0b0000000: System.out.println("srl"); break;
-                                    case 0b0100000: System.out.println("sra"); break;
+                                    case 0b0000000: System.out.println("srl"); reg.writeWord(rd, reg.readWord(rs1) >>> reg.readWord(rs2)); break;
+                                    case 0b0100000: System.out.println("sra"); reg.writeWord(rd, reg.readWord(rs1) >>  reg.readWord(rs2)); break;
                                     default: System.out.println("Unknown shift operation"); break;
                                 }
                                 break;

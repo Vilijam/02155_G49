@@ -16,11 +16,13 @@ public class Simulator {
 
         String inputFile = args[0];
         byte[] programMem;
+        byte[] resReg;
         byte[] dataMem = new byte[1024];
         Registers reg = new Registers(dataMem);
 
         try {
-            programMem  = Files.readAllBytes(Paths.get(inputFile));
+            programMem  = Files.readAllBytes(Paths.get(inputFile + ".bin"));
+            resReg      = Files.readAllBytes(Paths.get(inputFile + ".res"));
             boolean notEOF = true;
             
             int instr;
@@ -200,12 +202,28 @@ public class Simulator {
                 Termination
             */
 
-            // Print register contents
+            // Check register contents
+            int failed = 0;
+
             for (int i = 0; i < 32; ++i) {
-                System.out.println("Value at adress " + i + ":");
-                System.out.println(reg.readWord(i));
+                if ( reg.readWord(i) == bytesToWord(i*4, resReg) ) {
+
+                } else {
+                    failed = failed + 1;
+                    System.out.println("Error at address " + i + ":");
+                    System.out.println("Our: " + reg.readWord(i));
+                    System.out.println("Res: " + bytesToWord(i*4, resReg));
+                }
+                
+                //System.out.println("Value at adress " + i + ":");
+                //System.out.println(reg.readWord(i));
                 //System.out.println(Integer.toBinaryString(reg.readWord(i)));
             }
+
+            if (failed == 0) {
+                System.out.println("Hurrah!");
+            }
+
 
         } catch (IOException ex) {
             ex.printStackTrace();

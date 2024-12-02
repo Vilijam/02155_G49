@@ -60,7 +60,7 @@ public class Sim {
 
                 iFormat_Imm = (instr >> 20);
                 uFormat_Imm = (instr & 0xFFFFF000); //No need to shift the bits as this is for the upper immediate
-                sFormat_Imm = rd | (((instr & 0xFE000000) >> 21));
+                sFormat_Imm = rd | (((instr & 0xFE000000) >> 21)); //We reuse the rd value as it is equal to part of the immediate we need
                 sbFormat_Imm = (0x80000000 & instr) // Grab bit 31
                         | (0x40000000 & (instr << 23)) // Then bit 7
                         | (0x3F000000 & (instr >> 1)) // Then bits 25-30
@@ -72,7 +72,7 @@ public class Sim {
                         | (0x7F800000 & (instr << 12)) // Then bits 12-19
                         | (0x00400000 & (instr << 11)) // Then bits 20
                         | (0x003FF000 & (instr >> 10)); // then 30-21
-                ujFormat_Imm = sbFormat_Imm >> 11; // shift the whole thing over to the right, while signextending and
+                ujFormat_Imm = ujFormat_Imm >> 11; // shift the whole thing over to the right, while signextending and
                                                    // preserving that the rightmost bit is always zero
 
                 // printInstruction(opcode, rd, funct3, rs1, rs2, funct7, iFormat_Imm,

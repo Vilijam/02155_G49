@@ -3,6 +3,8 @@ import java.nio.file.*;
 
 public class Sim {
 
+    static boolean DEBUG = false;
+
     public static void main(String[] args) {
 
         if (args.length < 1) {
@@ -95,27 +97,27 @@ public class Sim {
                     case 0b0000011: // Load instructions
                         switch (funct3) {
                             case 0b000:
-                                System.out.println("lb");
+                                printDebug("lb");
                                 reg.writeWord(rd, memory.readByteAsWord(reg.readWord(rs1) + iFormat_Imm, true)); //lb
                                 break;
                             case 0b001:
-                                System.out.println("lh");
+                                printDebug("lh");
                                 reg.writeWord(rd, memory.readHalfWordAsWord(reg.readWord(rs1) + iFormat_Imm, true)); //lh
                                 break;
                             case 0b010:
-                                System.out.println("lw");
+                                printDebug("lw");
                                 reg.writeWord(rd, memory.readWord(reg.readWord(rs1) + iFormat_Imm)); //lw
                                 break;
                             case 0b100:
-                                System.out.println("lbu");
+                                printDebug("lbu");
                                 reg.writeWord(rd, memory.readByteAsWord(reg.readWord(rs1) + iFormat_Imm, false)); //lbu
                                 break;
                             case 0b101:
-                                System.out.println("lhu");
+                                printDebug("lhu");
                                 reg.writeWord(rd, memory.readHalfWordAsWord(reg.readWord(rs1) + iFormat_Imm, false)); //lhu
                                 break;
                             default:
-                                System.out.println("Unknown load instruction");
+                                printDebug("Unknown load instruction");
                                 break;
                         }
                         break;
@@ -123,75 +125,75 @@ public class Sim {
                     case 0b0010011: // Immediate instructions
                         switch (funct3) {
                             case 0b000:
-                                System.out.println("addi");
+                                printDebug("addi");
                                 reg.writeWord(rd, reg.readWord(rs1) + iFormat_Imm);
                                 break;
                             case 0b001:
-                                System.out.println("slli");
+                                printDebug("slli");
                                 reg.writeWord(rd, reg.readWord(rs1) << iFormat_Imm);
                                 break;
                             case 0b010:
-                                System.out.println("slti");
+                                printDebug("slti");
                                 reg.writeWord(rd, (reg.readWord(rs1) < iFormat_Imm) ? 1 : 0);
                                 break;
                             case 0b011:
-                                System.out.println("sltiu");
+                                printDebug("sltiu");
                                 reg.writeWord(rd,
                                         (Integer.compareUnsigned(reg.readWord(rs1), iFormat_Imm) < 0) ? 1 : 0);
                                 break;
                             case 0b100:
-                                System.out.println("xori");
+                                printDebug("xori");
                                 reg.writeWord(rd, reg.readWord(rs1) ^ iFormat_Imm);
                                 break;
                             case 0b101:
                                 switch (funct7) {
                                     case 0b0000000:
-                                        System.out.println("srli");
+                                        printDebug("srli");
                                         reg.writeWord(rd, reg.readWord(rs1) >>> iFormat_Imm);
                                         break;
                                     case 0b0100000:
-                                        System.out.println("srai");
+                                        printDebug("srai");
                                         reg.writeWord(rd, reg.readWord(rs1) >> iFormat_Imm);
                                         break;
                                     default:
-                                        System.out.println("Unknown shift immediate");
+                                        printDebug("Unknown shift immediate");
                                         break;
                                 }
                                 break;
                             case 0b110:
-                                System.out.println("ori");
+                                printDebug("ori");
                                 reg.writeWord(rd, reg.readWord(rs1) | iFormat_Imm);
                                 break;
                             case 0b111:
-                                System.out.println("andi");
+                                printDebug("andi");
                                 reg.writeWord(rd, reg.readWord(rs1) & iFormat_Imm);
                                 break;
                             default:
-                                System.out.println("Unknown immediate instruction");
+                                printDebug("Unknown immediate instruction");
                                 break;
                         }
                         break;
 
                     case 0b0010111: // U-type instruction
-                        System.out.println("auipc");
+                        printDebug("auipc");
                         break;
 
                     case 0b0100011: // Store instructions
                         switch (funct3) {
                             case 0b000:
-                                System.out.println("sb");
+                                printDebug("sb");
                                 memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 1); //sb
                                 break;
                             case 0b001:
-                                System.out.println("sh");
+                                printDebug("sh");
                                 memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 2); //sh
                                 break;
                             case 0b010:
-                                System.out.println("sw");
+                                printDebug("sw");
                                 memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 4); //sw
                                 break;
                             default:
-                                System.out.println("Unknown store instruction");
+                                printDebug("Unknown store instruction");
                                 break;
                         }
                         break;
@@ -201,91 +203,91 @@ public class Sim {
                             case 0b000:
                                 switch (funct7) {
                                     case 0b0000000:
-                                        System.out.println("add");
+                                        printDebug("add");
                                         reg.writeWord(rd, reg.readWord(rs1) + reg.readWord(rs2));
                                         break;
                                     case 0b0100000:
-                                        System.out.println("sub");
+                                        printDebug("sub");
                                         reg.writeWord(rd, reg.readWord(rs1) - reg.readWord(rs2));
                                         break;
                                     default:
-                                        System.out.println("Unknown arithmetic operation");
+                                        printDebug("Unknown arithmetic operation");
                                         break;
                                 }
                                 break;
                             case 0b001:
-                                System.out.println("sll");
+                                printDebug("sll");
                                 reg.writeWord(rd, reg.readWord(rs1) << reg.readWord(rs2));
                                 break;
                             case 0b010:
-                                System.out.println("slt");
+                                printDebug("slt");
                                 reg.writeWord(rd, (reg.readWord(rs1) < reg.readWord(rs2)) ? 1 : 0);
                                 break;
                             case 0b011:
-                                System.out.println("sltu");
+                                printDebug("sltu");
                                 reg.writeWord(rd,
                                         (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) < 0) ? 1 : 0);
                                 break;
                             case 0b100:
-                                System.out.println("xor");
+                                printDebug("xor");
                                 reg.writeWord(rd, reg.readWord(rs1) ^ reg.readWord(rs2));
                                 break;
                             case 0b101:
                                 switch (funct7) {
                                     case 0b0000000:
-                                        System.out.println("srl");
+                                        printDebug("srl");
                                         reg.writeWord(rd, reg.readWord(rs1) >>> reg.readWord(rs2));
                                         break;
                                     case 0b0100000:
-                                        System.out.println("sra");
+                                        printDebug("sra");
                                         reg.writeWord(rd, reg.readWord(rs1) >> reg.readWord(rs2));
                                         break;
                                     default:
-                                        System.out.println("Unknown shift operation");
+                                        printDebug("Unknown shift operation");
                                         break;
                                 }
                                 break;
                             case 0b110:
-                                System.out.println("or");
+                                printDebug("or");
                                 reg.writeWord(rd, reg.readWord(rs1) | reg.readWord(rs2));
                                 break;
                             case 0b111:
-                                System.out.println("and");
+                                printDebug("and");
                                 reg.writeWord(rd, reg.readWord(rs1) & reg.readWord(rs2));
                                 break;
                             default:
-                                System.out.println("Unknown R-type instruction");
+                                printDebug("Unknown R-type instruction");
                                 break;
                         }
                         break;
 
                     case 0b0110111: // U-type instruction
-                        System.out.println("lui");
+                        printDebug("lui");
                         reg.writeWord(rd, (uFormat_Imm));
                         break;
 
                     case 0b1100011: // Branch instructions
                         switch (funct3) {
                             case 0b000:
-                                System.out.println("beq");
+                                printDebug("beq");
                                 break;
                             case 0b001:
-                                System.out.println("bne");
+                                printDebug("bne");
                                 break;
                             case 0b100:
-                                System.out.println("blt");
+                                printDebug("blt");
                                 break;
                             case 0b101:
-                                System.out.println("bge");
+                                printDebug("bge");
                                 break;
                             case 0b110:
-                                System.out.println("bltu");
+                                printDebug("bltu");
                                 break;
                             case 0b111:
-                                System.out.println("bgeu");
+                                printDebug("bgeu");
                                 break;
                             default:
-                                System.out.println("Unknown branch instruction");
+                                printDebug("Unknown branch instruction");
                                 break;
                         }
                         break;
@@ -293,29 +295,29 @@ public class Sim {
                     case 0b1100111: // JALR
                         switch (funct3) {
                             case 0b000:
-                                System.out.println("jalr");
+                                printDebug("jalr");
                                 break;
                             default:
-                                System.out.println("Unknown jalr instruction");
+                                printDebug("Unknown jalr instruction");
                                 break;
                         }
                         break;
 
                     case 0b1101111: // JAL
-                        System.out.println("jal");
+                        printDebug("jal");
                         break;
 
                     case 0b1110011: // System instructions
                         if (funct3 == 0b000 && funct7 == 0) {
-                            System.out.println("ecall");
+                            printDebug("ecall");
                             running = false;
                         } else {
-                            System.out.println("Unknown system instruction");
+                            printDebug("Unknown system instruction");
                         }
                         break;
 
                     default:
-                        System.out.println("Unknown opcode");
+                        printDebug("Unknown opcode");
                         break;
                 }
 
@@ -348,6 +350,12 @@ public class Sim {
             if (failed == 0) {
                 System.out.println("Hurrah!");
             }
+    }
+
+    static void printDebug(String s){
+        if(DEBUG){
+            System.out.println(s);
+        }
     }
 
     static int bytesToWord(int index, byte[] mem) {

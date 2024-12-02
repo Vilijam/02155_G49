@@ -1,9 +1,8 @@
 
 all:
 	javac -d ./ src/Sim.java src/Memory.java src/Registers.java
-	java Sim
 
-testall: test4 test3 test2 test1
+testall: test1 test2 test3 test4
 
 test1: all
 	java Sim tests/task1/addlarge

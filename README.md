@@ -1,8 +1,29 @@
 # 02155_G49
 Den besdte rics5 simulatår
 
+# Install and run
+In order to compile and run the code:
 
-Brugte https://www.codejava.net/java-se/file-io/how-to-read-and-write-binary-files-in-java til at starte. Kopieret
+### Linux:
+Use the makefile. As shown here:
+
+    make all
+    java Sim [inputfile]
+
+### Windows:
+If you have [make for windows](https://gnuwin32.sourceforge.net/packages/make.htm) installed, you can use make as with Linux. 
+Else these commands also work:
+    
+    javac -d ./ src/Sim.java src/Memory.java src/Registers.java
+    java Sim [inputfile]
+
+
+
+
+
+<br><br><br><br><br>
+
+Used https://www.codejava.net/java-se/file-io/how-to-read-and-write-binary-files-in-java as a template. Copied
 
 MNEMOMIC    OPDOCE      FUNCT3      FUNC7
 lb          0000011     000

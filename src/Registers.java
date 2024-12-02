@@ -1,4 +1,8 @@
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+
 class Registers {
 
     byte[] reg;
@@ -38,5 +42,19 @@ class Registers {
 
         return word;
     }
+
+    void writeRes() {
+        try {
+            Files.write(Paths.get("out.res"), reg);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+
+
+
+
+
 
 }

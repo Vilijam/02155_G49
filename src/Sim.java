@@ -3,7 +3,7 @@ import java.nio.file.*;
 
 public class Sim {
 
-    static boolean DEBUG = true;
+    static boolean DEBUG = false;
 
     public static void main(String[] args) {
 
@@ -68,7 +68,7 @@ public class Sim {
 
                 iFormat_Imm = (instruction >> 20);
                 uFormat_Imm = (instruction & 0xFFFFF000); //No need to shift the bits as this is for the upper immediate
-                sFormat_Imm = rd | (((instruction & 0xFE000000) >> 21)); //We reuse the rd value as it is equal to part of the immediate we need
+                sFormat_Imm = rd | (((instruction & 0xFE000000) >> 20)); //We reuse the rd value as it is equal to part of the immediate we need
                 sbFormat_Imm = (0x80000000 & instruction) // Grab bit 31
                         | (0x40000000 & (instruction << 23)) // Then bit 7
                         | (0x3F000000 & (instruction >> 1)) // Then bits 25-30
@@ -76,12 +76,14 @@ public class Sim {
                 sbFormat_Imm = sbFormat_Imm >> 19; // shift the whole thing over to the right, while signextending and
                                                    // preserving that the rightmost bit is always zero
 
+
                 ujFormat_Imm = (0x80000000 & instruction) // Grab bit 31
-                        | (0x7F800000 & (instruction << 12)) // Then bits 12-19
-                        | (0x00400000 & (instruction << 11)) // Then bits 20
-                        | (0x003FF000 & (instruction >> 10)); // then 30-21
+                        | (0x7F800000 & (instruction << 11)) // Then bits 12-19
+                        | (0x00400000 & (instruction << 2)) // Then bits 20
+                        | (0x003FF000 & (instruction >> 9)); // then 30-21
                 ujFormat_Imm = ujFormat_Imm >> 11; // shift the whole thing over to the right, while signextending and
                                                    // preserving that the rightmost bit is always zero
+//System.out.println(Integer.toBinaryString(ujFormat_Imm));
 
                 /*
                  * The Switch Statement
@@ -98,8 +100,10 @@ public class Sim {
                                 reg.writeWord(rd, memory.readHalfWordAsWord(reg.readWord(rs1) + iFormat_Imm, true)); //lh
                                 break;
                             case 0b010:
-                                printDebug("lw");
+                                printDebug("lw, Reg#"+ rd + "= address:" +"Reg#" + rs1 + " :" + (reg.readWord(rs1) + iFormat_Imm));
                                 reg.writeWord(rd, memory.readWord(reg.readWord(rs1) + iFormat_Imm)); //lw
+                                printDebug("FROM LOAD: " + reg.readWord(rd));
+
                                 break;
                             case 0b100:
                                 printDebug("lbu");
@@ -118,7 +122,7 @@ public class Sim {
                     case 0b0010011: // Immediate instructions
                         switch (funct3) {
                             case 0b000:
-                                printDebug("addi");
+                                printDebug("addi, reg# " + rd + " = reg#" + rs1 + ": " + (reg.readWord(rs1) + iFormat_Imm));
                                 reg.writeWord(rd, reg.readWord(rs1) + iFormat_Imm);
                                 break;
                             case 0b001:
@@ -182,7 +186,7 @@ public class Sim {
                                 memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 2); //sh
                                 break;
                             case 0b010:
-                                printDebug("sw");
+                                printDebug("sw, Reg#"+ rs2 + ":" + reg.readWord(rs2) + " -> address:" +"Reg#" + rs1 + " :" + (reg.readWord(rs1) + sFormat_Imm));
                                 memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 4); //sw
                                 break;
                             default:
@@ -312,7 +316,7 @@ public class Sim {
                     case 0b1100111: // JALR
                         switch (funct3) {
                             case 0b000:
-                                printDebug("jalr");
+                                printDebug("jalr, reg# " + rd + " = pc:" + pc + ", pc=reg#"+ rs1 + ":" + reg.readWord(rs1) + " + iformat:" + iFormat_Imm);
                                 reg.writeWord(rd, pc + 4);
                                 pc = reg.readWord(rs1) + iFormat_Imm;
                                 jumping = true;
@@ -326,6 +330,7 @@ public class Sim {
                     case 0b1101111: // JAL
                         printDebug("jal");
                         reg.writeWord(rd, pc + 4);
+                        //System.out.println(ujFormat_Imm);
                         pc = pc + ujFormat_Imm;
                         jumping = true;
                         break;

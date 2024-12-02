@@ -14,8 +14,8 @@ public class Sim {
         }
 
         String inputFile = args[0];
-        byte[] resReg;
-        Registers reg = new Registers();
+        byte[] resReg; //Byte array to hold the expected register data
+        Registers reg = new Registers(); //We create objects for the register and memory abstractions
         Memory memory = new Memory();
 
         try {
@@ -35,6 +35,7 @@ public class Sim {
             boolean running = true;
             boolean jumping = false;
 
+            //We declare the different possible fields of the instruction to later populate with the correct bits
             int instruction;
             int opcode;
             int rd;
@@ -60,16 +61,21 @@ public class Sim {
                 /*
                  * Decode Instruction
                  */
-                opcode = (instruction) & 0x7f; // matching 0000 0000 0000 0000 0000 0000 0111 1111
-                rd = (instruction >> 7) & 0x1f; // matching 0000 0000 0000 0000 0000 1111 1000 0000
-                funct3 = (instruction >> 12) & 0x7; // matching 0000 0000 0000 0000 0111 0000 0000 0000
-                rs1 = (instruction >> 15) & 0x1f; // matching 0000 0000 0000 1111 1000 0000 0000 0000
-                rs2 = (instruction >> 20) & 0x1f; // matching 0000 0001 1111 0000 0000 0000 0000 0000
-                funct7 = (instruction >> 25) & 0x7f; // matching 1111 1110 0000 0000 0000 0000 0000 0000
+                opcode = (instruction) & 0x7f;          // matching 0000 0000 0000 0000 0000 0000 0111 1111
+                rd = (instruction >> 7) & 0x1f;         // matching 0000 0000 0000 0000 0000 1111 1000 0000
+                funct3 = (instruction >> 12) & 0x7;     // matching 0000 0000 0000 0000 0111 0000 0000 0000
+                rs1 = (instruction >> 15) & 0x1f;       // matching 0000 0000 0000 1111 1000 0000 0000 0000
+                rs2 = (instruction >> 20) & 0x1f;       // matching 0000 0001 1111 0000 0000 0000 0000 0000
+                funct7 = (instruction >> 25) & 0x7f;    // matching 1111 1110 0000 0000 0000 0000 0000 0000
 
+                //The different immediate formats get constructed
                 iFormat_Imm = (instruction >> 20);
+                
                 uFormat_Imm = (instruction & 0xFFFFF000); //No need to shift the bits as this is for the upper immediate
+                
                 sFormat_Imm = rd | (((instruction & 0xFE000000) >> 20)); //We reuse the rd value as it is equal to part of the immediate we need
+                
+                //We grab the bits from the different parts of the instruction, gather them in one place to the left and then shift the final value right
                 sbFormat_Imm = (0x80000000 & instruction) // Grab bit 31
                         | (0x40000000 & (instruction << 23)) // Then bit 7
                         | (0x3F000000 & (instruction >> 1)) // Then bits 25-30
@@ -84,7 +90,6 @@ public class Sim {
                         | (0x003FF000 & (instruction >> 9)); // then 30-21
                 ujFormat_Imm = ujFormat_Imm >> 11; // shift the whole thing over to the right, while signextending and
                                                    // preserving that the rightmost bit is always zero
-//System.out.println(Integer.toBinaryString(ujFormat_Imm));
 
                 /*
                  * The Switch Statement
@@ -113,42 +118,42 @@ public class Sim {
                     case 0b0010011: // Immediate instructions
                         switch (funct3) {
                             case 0b000:
-                                reg.writeWord(rd, reg.readWord(rs1) + iFormat_Imm);
+                                reg.writeWord(rd, reg.readWord(rs1) + iFormat_Imm); //addi
                                 break;
                             case 0b001:
-                                reg.writeWord(rd, reg.readWord(rs1) << iFormat_Imm);
+                                reg.writeWord(rd, reg.readWord(rs1) << iFormat_Imm); //slli
                                 break;
                             case 0b010:
-                                reg.writeWord(rd, (reg.readWord(rs1) < iFormat_Imm) ? 1 : 0);
+                                reg.writeWord(rd, (reg.readWord(rs1) < iFormat_Imm) ? 1 : 0); //slti
                                 break;
                             case 0b011:
                                 reg.writeWord(rd,
-                                        (Integer.compareUnsigned(reg.readWord(rs1), iFormat_Imm) < 0) ? 1 : 0);
+                                        (Integer.compareUnsigned(reg.readWord(rs1), iFormat_Imm) < 0) ? 1 : 0); //sltiu
                                 break;
                             case 0b100:
-                                reg.writeWord(rd, reg.readWord(rs1) ^ iFormat_Imm);
+                                reg.writeWord(rd, reg.readWord(rs1) ^ iFormat_Imm); //xori
                                 break;
                             case 0b101:
                                 switch (funct7) {
                                     case 0b0000000:
-                                        reg.writeWord(rd, reg.readWord(rs1) >>> iFormat_Imm);
+                                        reg.writeWord(rd, reg.readWord(rs1) >>> iFormat_Imm); //srli
                                         break;
                                     case 0b0100000:
-                                        reg.writeWord(rd, reg.readWord(rs1) >> iFormat_Imm);
+                                        reg.writeWord(rd, reg.readWord(rs1) >> iFormat_Imm); //srai
                                         break;
                                 }
                                 break;
                             case 0b110:
-                                reg.writeWord(rd, reg.readWord(rs1) | iFormat_Imm);
+                                reg.writeWord(rd, reg.readWord(rs1) | iFormat_Imm); //ori
                                 break;
                             case 0b111:
-                                reg.writeWord(rd, reg.readWord(rs1) & iFormat_Imm);
+                                reg.writeWord(rd, reg.readWord(rs1) & iFormat_Imm); //andi
                                 break;
                         }
                         break;
 
                     case 0b0010111: // U-type instruction
-                        reg.writeWord(rd, pc + uFormat_Imm);
+                        reg.writeWord(rd, pc + uFormat_Imm); //auipc
                         break;
 
                     case 0b0100011: // Store instructions
@@ -170,83 +175,83 @@ public class Sim {
                             case 0b000:
                                 switch (funct7) {
                                     case 0b0000000:
-                                        reg.writeWord(rd, reg.readWord(rs1) + reg.readWord(rs2));
+                                        reg.writeWord(rd, reg.readWord(rs1) + reg.readWord(rs2)); //add
                                         break;
                                     case 0b0100000:
-                                        reg.writeWord(rd, reg.readWord(rs1) - reg.readWord(rs2));
+                                        reg.writeWord(rd, reg.readWord(rs1) - reg.readWord(rs2)); //sub
                                         break;
                                 }
                                 break;
                             case 0b001:
-                                reg.writeWord(rd, reg.readWord(rs1) << reg.readWord(rs2));
+                                reg.writeWord(rd, reg.readWord(rs1) << reg.readWord(rs2)); //sll
                                 break;
                             case 0b010:
-                                reg.writeWord(rd, (reg.readWord(rs1) < reg.readWord(rs2)) ? 1 : 0);
+                                reg.writeWord(rd, (reg.readWord(rs1) < reg.readWord(rs2)) ? 1 : 0); //slt
                                 break;
                             case 0b011:
                                 reg.writeWord(rd,
-                                        (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) < 0) ? 1 : 0);
+                                        (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) < 0) ? 1 : 0); //sltu
                                 break;
                             case 0b100:
-                                reg.writeWord(rd, reg.readWord(rs1) ^ reg.readWord(rs2));
+                                reg.writeWord(rd, reg.readWord(rs1) ^ reg.readWord(rs2)); //xor
                                 break;
                             case 0b101:
                                 switch (funct7) {
                                     case 0b0000000:
-                                        reg.writeWord(rd, reg.readWord(rs1) >>> reg.readWord(rs2));
+                                        reg.writeWord(rd, reg.readWord(rs1) >>> reg.readWord(rs2)); //sal
                                         break;
                                     case 0b0100000:
-                                        reg.writeWord(rd, reg.readWord(rs1) >> reg.readWord(rs2));
+                                        reg.writeWord(rd, reg.readWord(rs1) >> reg.readWord(rs2)); //sra
                                         break;
                                 }
                                 break;
                             case 0b110:
-                                reg.writeWord(rd, reg.readWord(rs1) | reg.readWord(rs2));
+                                reg.writeWord(rd, reg.readWord(rs1) | reg.readWord(rs2)); //or
                                 break;
                             case 0b111:
-                                reg.writeWord(rd, reg.readWord(rs1) & reg.readWord(rs2));
+                                reg.writeWord(rd, reg.readWord(rs1) & reg.readWord(rs2)); //and
                                 break;
                         }
                         break;
 
                     case 0b0110111: // U-type instruction
-                        reg.writeWord(rd, (uFormat_Imm));
+                        reg.writeWord(rd, (uFormat_Imm)); //lui
                         break;
 
                     case 0b1100011: // Branch instructions
                         switch (funct3) {
                             case 0b000:
-                                if (reg.readWord(rs1) == reg.readWord(rs2)) {
+                                if (reg.readWord(rs1) == reg.readWord(rs2)) { //beq
                                     jumping = true; 
                                     pc = pc + sbFormat_Imm; 
                                 }
                                 break;
                             case 0b001:
-                                if (reg.readWord(rs1) != reg.readWord(rs2)) {
+                                if (reg.readWord(rs1) != reg.readWord(rs2)) { //bne
                                     jumping = true; 
                                     pc = pc + sbFormat_Imm; 
                                 } 
                                 break;
                             case 0b100:
-                                if (reg.readWord(rs1) < reg.readWord(rs2)) {
+                                if (reg.readWord(rs1) < reg.readWord(rs2)) { //blt
                                     jumping = true; 
                                     pc = pc + sbFormat_Imm; 
                                 }
                                 break;
                             case 0b101:
-                                if (reg.readWord(rs1) >= reg.readWord(rs2)) {
+                                if (reg.readWord(rs1) >= reg.readWord(rs2)) { //bge
                                     jumping = true; 
                                     pc = pc + sbFormat_Imm; 
                                 }
                                 break;
                             case 0b110:
-                                if (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) < 0) {
+                                if (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) < 0) { //bltu
                                     jumping = true; 
                                     pc = pc + sbFormat_Imm; 
                                 }
                                 break;
                             case 0b111:
-                                if (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) >= 0) {
+                                if (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) >= 0) { //bgeu
                                     jumping = true; 
                                     pc = pc + sbFormat_Imm; 
                                 }
@@ -257,7 +262,7 @@ public class Sim {
                     case 0b1100111: // JALR
                         switch (funct3) {
                             case 0b000:
-                                reg.writeWord(rd, pc + 4);
+                                reg.writeWord(rd, pc + 4); 
                                 pc = reg.readWord(rs1) + iFormat_Imm;
                                 jumping = true;
                                 break;
@@ -272,7 +277,7 @@ public class Sim {
                         break;
 
                     case 0b1110011: // System instructions
-                        if (funct3 == 0b000 && funct7 == 0) {
+                        if (funct3 == 0b000 && funct7 == 0) { //ecall
                             running = false;
                         }
                         break;

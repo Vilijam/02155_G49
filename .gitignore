@@ -27,3 +27,5 @@ test.java
 .vscode/settings.json
 
 bin/
+
+out.res

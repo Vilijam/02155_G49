@@ -3,7 +3,7 @@ import java.nio.file.*;
 
 public class Sim {
 
-    static boolean DEBUG = false;
+    static boolean DEBUG = true;
 
     public static void main(String[] args) {
 
@@ -32,6 +32,7 @@ public class Sim {
         }
 
             boolean running = true;
+            boolean jumping = false;
 
             int instruction;
             int opcode;
@@ -270,21 +271,45 @@ public class Sim {
                         switch (funct3) {
                             case 0b000:
                                 printDebug("beq");
+                                if (reg.readWord(rs1) == reg.readWord(rs2)) {
+                                    jumping = true; 
+                                    pc = pc + sbFormat_Imm; 
+                                }
                                 break;
                             case 0b001:
                                 printDebug("bne");
+                                if (reg.readWord(rs1) != reg.readWord(rs2)) {
+                                    jumping = true; 
+                                    pc = pc + sbFormat_Imm; 
+                                } 
                                 break;
                             case 0b100:
                                 printDebug("blt");
+                                if (reg.readWord(rs1) < reg.readWord(rs2)) {
+                                    jumping = true; 
+                                    pc = pc + sbFormat_Imm; 
+                                }
                                 break;
                             case 0b101:
                                 printDebug("bge");
+                                if (reg.readWord(rs1) >= reg.readWord(rs2)) {
+                                    jumping = true; 
+                                    pc = pc + sbFormat_Imm; 
+                                }
                                 break;
                             case 0b110:
                                 printDebug("bltu");
+                                if (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) < 0) {
+                                    jumping = true; 
+                                    pc = pc + sbFormat_Imm; 
+                                }
                                 break;
                             case 0b111:
                                 printDebug("bgeu");
+                                if (Integer.compareUnsigned(reg.readWord(rs1), reg.readWord(rs2)) >= 0) {
+                                    jumping = true; 
+                                    pc = pc + sbFormat_Imm; 
+                                }
                                 break;
                             default:
                                 printDebug("Unknown branch instruction");
@@ -321,7 +346,11 @@ public class Sim {
                         break;
                 }
 
-                pc = pc + 4;
+                if (jumping == false) {
+                    pc = pc + 4; 
+                } else {
+                    jumping = false;
+                }
 
             }
 

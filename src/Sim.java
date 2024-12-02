@@ -59,7 +59,7 @@ public class Sim {
                 // What is Java's default sign extension? casting byte to int does ext. sign.
 
                 iFormat_Imm = (instr >> 20);
-                uFormat_Imm = (instr & 0xFFFFF000);
+                uFormat_Imm = (instr & 0xFFFFF000); //No need to shift the bits as this is for the upper immediate
                 sFormat_Imm = rd | (((instr & 0xFE000000) >> 21));
                 sbFormat_Imm = (0x80000000 & instr) // Grab bit 31
                         | (0x40000000 & (instr << 23)) // Then bit 7
@@ -86,23 +86,23 @@ public class Sim {
                         switch (funct3) {
                             case 0b000:
                                 System.out.println("lb");
-                                reg.writeWord(rd, memory.readByteAsWord(reg.readWord(rs1) + iFormat_Imm, true));
+                                reg.writeWord(rd, memory.readByteAsWord(reg.readWord(rs1) + iFormat_Imm, true)); //lb
                                 break;
                             case 0b001:
                                 System.out.println("lh");
-                                reg.writeWord(rd, memory.readHalfWordAsWord(reg.readWord(rs1) + iFormat_Imm, true));
+                                reg.writeWord(rd, memory.readHalfWordAsWord(reg.readWord(rs1) + iFormat_Imm, true)); //lh
                                 break;
                             case 0b010:
                                 System.out.println("lw");
-                                reg.writeWord(rd, memory.readWord(reg.readWord(rs1) + iFormat_Imm));
+                                reg.writeWord(rd, memory.readWord(reg.readWord(rs1) + iFormat_Imm)); //lw
                                 break;
                             case 0b100:
                                 System.out.println("lbu");
-                                reg.writeWord(rd, memory.readByteAsWord(reg.readWord(rs1) + iFormat_Imm, false));
+                                reg.writeWord(rd, memory.readByteAsWord(reg.readWord(rs1) + iFormat_Imm, false)); //lbu
                                 break;
                             case 0b101:
                                 System.out.println("lhu");
-                                reg.writeWord(rd, memory.readHalfWordAsWord(reg.readWord(rs1) + iFormat_Imm, false));
+                                reg.writeWord(rd, memory.readHalfWordAsWord(reg.readWord(rs1) + iFormat_Imm, false)); //lhu
                                 break;
                             default:
                                 System.out.println("Unknown load instruction");
@@ -170,13 +170,15 @@ public class Sim {
                         switch (funct3) {
                             case 0b000:
                                 System.out.println("sb");
-                                memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 1);
+                                memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 1); //sb
                                 break;
                             case 0b001:
-                                memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 2);
+                                System.out.println("sh");
+                                memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 2); //sh
                                 break;
                             case 0b010:
-                                memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 4);
+                                System.out.println("sw");
+                                memory.write(reg.readWord(rs1) + sFormat_Imm, reg.readWord(rs2), 4); //sw
                                 break;
                             default:
                                 System.out.println("Unknown store instruction");

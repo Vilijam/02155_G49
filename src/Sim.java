@@ -1,5 +1,6 @@
 import java.io.*;
 import java.nio.file.*;
+import java.util.Arrays;
 
 public class Sim {
 
@@ -169,6 +170,7 @@ public class Sim {
 
                     case 0b0010111: // U-type instruction
                         printDebug("auipc");
+                        reg.writeWord(rd, pc + uFormat_Imm);
                         break;
 
                     case 0b0100011: // Store instructions
@@ -357,21 +359,35 @@ public class Sim {
              */
 
             // Check register contents
-            int failed = 0;
+            reg.writeRes();
 
-            for (int i = 0; i < 32; ++i) {
-                if (reg.readWord(i) == bytesToWord(i * 4, resReg)) {
-
+            byte[] res1; 
+            byte[] res2; 
+            try {
+                res1 = Files.readAllBytes(Paths.get("out.res"));
+                res2 = Files.readAllBytes(Paths.get(inputFile + ".res"));
+                
+                if (Arrays.compare(res1, res2) == 0) {
+                    System.out.println("Comparison SUCCESS");
+                    
                 } else {
-                    failed = failed + 1;
-                    System.out.println("Error at address " + i + ":");
-                    System.out.println("Our: " + reg.readWord(i));
-                    System.out.println("Res: " + bytesToWord(i * 4, resReg));
+                    System.out.println("Comparison FAILURE");
                 }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
 
-            if (failed == 0) {
-                System.out.println("Hurrah!");
+            if (DEBUG) {
+                for (int i = 0; i < 32; ++i) {
+                    if (reg.readWord(i) == bytesToWord(i * 4, resReg)) {
+
+                    } else {
+                        System.out.println("Error at address " + i + ":");
+                        System.out.println("Our: " + reg.readWord(i));
+                        System.out.println("Res: " + bytesToWord(i * 4, resReg));
+                    }
+                }
             }
     }
 

@@ -251,7 +251,7 @@ public class Sim {
 
                     case 0b0110111: // U-type instruction
                         System.out.println("lui");
-                        reg.writeWord(rd, (uFormat_Imm << 12));
+                        reg.writeWord(rd, (uFormat_Imm));
                         break;
 
                     case 0b1100011: // Branch instructions

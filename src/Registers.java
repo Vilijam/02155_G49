@@ -14,7 +14,7 @@ class Registers {
         this.reg[3] = 0;
     }
 
-    public int readWord(int index) {
+    public int read(int index) {
         // Multiplying by 4 to get the word address
         // e.g. x5 is the address for the 5th word but the 20th byte
         return bytesToWord(index * 4, reg);

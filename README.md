@@ -1,5 +1,6 @@
 # 02155_G49
 Den besdte rics5 simulatår
+https://github.com/Vilijam/02155_G49
 
 # Install and run
 In order to compile and run the code:

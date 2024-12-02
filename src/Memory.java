@@ -13,11 +13,11 @@ public class Memory {
     }
 
     public int readByteAsWord(int address, boolean signExtend) {
-        if (signExtend) {
+        if (signExtend)
             return memory[address];
-        } else {
+        else
             return Byte.toUnsignedInt(memory[address]);
-        }
+
     }
 
     public short readHalfWord(int address) {
@@ -28,7 +28,6 @@ public class Memory {
         int out;
         if (signExtend) {
             out = memory[address + 1];
-
         } else {
             out = Byte.toUnsignedInt(memory[address + 1]);
         }

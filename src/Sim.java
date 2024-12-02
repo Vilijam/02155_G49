@@ -42,9 +42,6 @@ public class Sim {
             int rs2;
             int funct7;
 
-            /*
-             * Det bliver besværligt at sikre fortegn
-             */
             int iFormat_Imm;
             int sFormat_Imm;
             int sbFormat_Imm;
@@ -69,8 +66,6 @@ public class Sim {
                 rs2 = (instruction >> 20) & 0x1f; // matching 0000 0001 1111 0000 0000 0000 0000 0000
                 funct7 = (instruction >> 25) & 0x7f; // matching 1111 1110 0000 0000 0000 0000 0000 0000
 
-                // What is Java's default sign extension? casting byte to int does ext. sign.
-
                 iFormat_Imm = (instruction >> 20);
                 uFormat_Imm = (instruction & 0xFFFFF000); //No need to shift the bits as this is for the upper immediate
                 sFormat_Imm = rd | (((instruction & 0xFE000000) >> 21)); //We reuse the rd value as it is equal to part of the immediate we need
@@ -87,9 +82,6 @@ public class Sim {
                         | (0x003FF000 & (instruction >> 10)); // then 30-21
                 ujFormat_Imm = ujFormat_Imm >> 11; // shift the whole thing over to the right, while signextending and
                                                    // preserving that the rightmost bit is always zero
-
-                // printInstruction(opcode, rd, funct3, rs1, rs2, funct7, iFormat_Imm,
-                // uFormat_Imm);
 
                 /*
                  * The Switch Statement
@@ -321,6 +313,9 @@ public class Sim {
                         switch (funct3) {
                             case 0b000:
                                 printDebug("jalr");
+                                reg.writeWord(rd, pc + 4);
+                                pc = reg.readWord(rs1) + iFormat_Imm;
+                                jumping = true;
                                 break;
                             default:
                                 printDebug("Unknown jalr instruction");
@@ -330,6 +325,9 @@ public class Sim {
 
                     case 0b1101111: // JAL
                         printDebug("jal");
+                        reg.writeWord(rd, pc + 4);
+                        pc = pc + ujFormat_Imm;
+                        jumping = true;
                         break;
 
                     case 0b1110011: // System instructions
@@ -370,10 +368,6 @@ public class Sim {
                     System.out.println("Our: " + reg.readWord(i));
                     System.out.println("Res: " + bytesToWord(i * 4, resReg));
                 }
-
-                // System.out.println("Value at adress " + i + ":");
-                // System.out.println(reg.readWord(i));
-                // System.out.println(Integer.toBinaryString(reg.readWord(i)));
             }
 
             if (failed == 0) {
@@ -407,19 +401,4 @@ public class Sim {
 
         return word;
     }
-
-    static void printInstruction(int opcode, int rd, int funct3, int rs1, int rs2, int funct7, int iFormat_Imm,
-            int uFormat_Imm) {
-        System.out.println("Leading zeroes not printed!");
-
-        System.out.println("opcode: \n" + Integer.toBinaryString(opcode));
-        System.out.println("rd: \n" + Integer.toBinaryString(rd));
-        System.out.println("funct3: \n" + Integer.toBinaryString(funct3));
-        System.out.println("rs1: \n" + Integer.toBinaryString(rs1));
-        System.out.println("rs2: \n" + Integer.toBinaryString(rs2));
-        System.out.println("funct7: \n" + Integer.toBinaryString(funct7));
-        System.out.println("iFormat_Imm: \n" + Integer.toBinaryString(iFormat_Imm));
-        System.out.println("uFormat_Imm: \n" + Integer.toBinaryString(uFormat_Imm));
-    }
-
 }

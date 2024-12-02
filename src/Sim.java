@@ -55,24 +55,25 @@ public class Sim {
                 rs1 = (instr >> 15) & 0x1f; // matching 0000 0000 0000 1111 1000 0000 0000 0000
                 rs2 = (instr >> 20) & 0x1f; // matching 0000 0001 1111 0000 0000 0000 0000 0000
                 funct7 = (instr >> 25) & 0x7f; // matching 1111 1110 0000 0000 0000 0000 0000 0000
-                // missing immediates
 
                 // What is Java's default sign extension? casting byte to int does ext. sign.
-                // Java's >> does preserve sign. Could refactor...
 
-                if (instr < 0) { // extending sign
-                    iFormat_Imm = (instr >> 20) | 0xfffff000;
-                } else {
-                    iFormat_Imm = (instr >> 20) & 0xfff;
-                }
-
-                if (instr < 0) { // extending sign
-                    uFormat_Imm = (instr >> 12) | 0xfff00000;
-                } else {
-                    uFormat_Imm = (instr >> 12) & 0xfffff;
-                }
-
+                iFormat_Imm = (instr >> 20);
+                uFormat_Imm = (instr & 0xFFFFF000);
                 sFormat_Imm = rd | (((instr & 0xFE000000) >> 21));
+                sbFormat_Imm = (0x80000000 & instr) // Grab bit 31
+                        | (0x40000000 & (instr << 23)) // Then bit 7
+                        | (0x3F000000 & (instr >> 1)) // Then bits 25-30
+                        | (0x00F00000 & (instr << 12)); // then 8-11
+                sbFormat_Imm = sbFormat_Imm >> 19; // shift the whole thing over to the right, while signextending and
+                                                   // preserving that the rightmost bit is always zero
+
+                ujFormat_Imm = (0x80000000 & instr) // Grab bit 31
+                        | (0x7F800000 & (instr << 12)) // Then bits 12-19
+                        | (0x00400000 & (instr << 11)) // Then bits 20
+                        | (0x003FF000 & (instr >> 10)); // then 30-21
+                ujFormat_Imm = sbFormat_Imm >> 11; // shift the whole thing over to the right, while signextending and
+                                                   // preserving that the rightmost bit is always zero
 
                 // printInstruction(opcode, rd, funct3, rs1, rs2, funct7, iFormat_Imm,
                 // uFormat_Imm);

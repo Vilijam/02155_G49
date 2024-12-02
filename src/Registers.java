@@ -50,11 +50,4 @@ class Registers {
             ex.printStackTrace();
         }
     }
-
-
-
-
-
-
-
 }

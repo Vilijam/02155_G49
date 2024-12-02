@@ -1,7 +1,5 @@
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 
 class Registers {
 
@@ -23,7 +21,7 @@ class Registers {
     }
 
     public void writeWord(int index, int value) {
-        if (index != 0) { // x0 is always 0. Logic here might be bad? Could e.g. lh load into reg[2]?
+        if (index != 0) { // x0 is always 0
             index = index * 4;
             reg[index] = (byte) value;
             reg[index + 1] = (byte) (value >> 8);
@@ -31,6 +29,17 @@ class Registers {
             reg[index + 3] = (byte) (value >> 24);
         }
     }
+
+
+        /*
+         * Collects the byte at given index in
+         * given memory and the 3 subsequent bytes into a word.
+         * Also, flips endianness.
+         * The first byte in memory ends as least significant byte.
+         * 
+         * The & operator converts byte to int and extends sign.
+         * Sign extension is counteracted.
+         */
 
     static int bytesToWord(int index, byte[] mem) {
         int word = 0;
@@ -43,6 +52,9 @@ class Registers {
         return word;
     }
 
+    /*
+     * Prints register contents to out.res file. Deletes previous contents
+     */
     void writeRes() {
         try {
             Files.write(Paths.get("out.res"), reg);

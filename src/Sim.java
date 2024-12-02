@@ -11,17 +11,27 @@ public class Sim {
         }
 
         String inputFile = args[0];
-        byte[] programMem;
         byte[] resReg;
         Registers reg = new Registers();
         Memory memory = new Memory();
 
         try {
-            programMem = Files.readAllBytes(Paths.get(inputFile + ".bin"));
-            resReg = Files.readAllBytes(Paths.get(inputFile + ".res"));
-            boolean notEOF = true;
+            //Load the binary from disk
+            byte[] program = Files.readAllBytes(Paths.get(inputFile + ".bin"));
+            
+            //We write the program to memory
+            memory.write(0, program); //Programs start at address 0 to work with test, we dont have an operating system
 
-            int instr;
+            resReg = Files.readAllBytes(Paths.get(inputFile + ".res"));
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return; //No reason to continue
+        }
+
+            boolean running = true;
+
+            int instruction;
             int opcode;
             int rd;
             int funct3;
@@ -39,39 +49,39 @@ public class Sim {
             int ujFormat_Imm;
             int pc = 0;
 
-            while (notEOF) {
+            while (running) {
 
                 /*
-                 * Fetch Instruction
+                 * Fetch Instruction from memory
                  */
-                instr = bytesToWord(pc, programMem);
+                instruction = memory.readWord(pc);
 
                 /*
                  * Decode Instruction
                  */
-                opcode = (instr) & 0x7f; // matching 0000 0000 0000 0000 0000 0000 0111 1111
-                rd = (instr >> 7) & 0x1f; // matching 0000 0000 0000 0000 0000 1111 1000 0000
-                funct3 = (instr >> 12) & 0x7; // matching 0000 0000 0000 0000 0111 0000 0000 0000
-                rs1 = (instr >> 15) & 0x1f; // matching 0000 0000 0000 1111 1000 0000 0000 0000
-                rs2 = (instr >> 20) & 0x1f; // matching 0000 0001 1111 0000 0000 0000 0000 0000
-                funct7 = (instr >> 25) & 0x7f; // matching 1111 1110 0000 0000 0000 0000 0000 0000
+                opcode = (instruction) & 0x7f; // matching 0000 0000 0000 0000 0000 0000 0111 1111
+                rd = (instruction >> 7) & 0x1f; // matching 0000 0000 0000 0000 0000 1111 1000 0000
+                funct3 = (instruction >> 12) & 0x7; // matching 0000 0000 0000 0000 0111 0000 0000 0000
+                rs1 = (instruction >> 15) & 0x1f; // matching 0000 0000 0000 1111 1000 0000 0000 0000
+                rs2 = (instruction >> 20) & 0x1f; // matching 0000 0001 1111 0000 0000 0000 0000 0000
+                funct7 = (instruction >> 25) & 0x7f; // matching 1111 1110 0000 0000 0000 0000 0000 0000
 
                 // What is Java's default sign extension? casting byte to int does ext. sign.
 
-                iFormat_Imm = (instr >> 20);
-                uFormat_Imm = (instr & 0xFFFFF000); //No need to shift the bits as this is for the upper immediate
-                sFormat_Imm = rd | (((instr & 0xFE000000) >> 21)); //We reuse the rd value as it is equal to part of the immediate we need
-                sbFormat_Imm = (0x80000000 & instr) // Grab bit 31
-                        | (0x40000000 & (instr << 23)) // Then bit 7
-                        | (0x3F000000 & (instr >> 1)) // Then bits 25-30
-                        | (0x00F00000 & (instr << 12)); // then 8-11
+                iFormat_Imm = (instruction >> 20);
+                uFormat_Imm = (instruction & 0xFFFFF000); //No need to shift the bits as this is for the upper immediate
+                sFormat_Imm = rd | (((instruction & 0xFE000000) >> 21)); //We reuse the rd value as it is equal to part of the immediate we need
+                sbFormat_Imm = (0x80000000 & instruction) // Grab bit 31
+                        | (0x40000000 & (instruction << 23)) // Then bit 7
+                        | (0x3F000000 & (instruction >> 1)) // Then bits 25-30
+                        | (0x00F00000 & (instruction << 12)); // then 8-11
                 sbFormat_Imm = sbFormat_Imm >> 19; // shift the whole thing over to the right, while signextending and
                                                    // preserving that the rightmost bit is always zero
 
-                ujFormat_Imm = (0x80000000 & instr) // Grab bit 31
-                        | (0x7F800000 & (instr << 12)) // Then bits 12-19
-                        | (0x00400000 & (instr << 11)) // Then bits 20
-                        | (0x003FF000 & (instr >> 10)); // then 30-21
+                ujFormat_Imm = (0x80000000 & instruction) // Grab bit 31
+                        | (0x7F800000 & (instruction << 12)) // Then bits 12-19
+                        | (0x00400000 & (instruction << 11)) // Then bits 20
+                        | (0x003FF000 & (instruction >> 10)); // then 30-21
                 ujFormat_Imm = ujFormat_Imm >> 11; // shift the whole thing over to the right, while signextending and
                                                    // preserving that the rightmost bit is always zero
 
@@ -298,7 +308,7 @@ public class Sim {
                     case 0b1110011: // System instructions
                         if (funct3 == 0b000 && funct7 == 0) {
                             System.out.println("ecall");
-                            notEOF = false;
+                            running = false;
                         } else {
                             System.out.println("Unknown system instruction");
                         }
@@ -338,11 +348,6 @@ public class Sim {
             if (failed == 0) {
                 System.out.println("Hurrah!");
             }
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
     }
 
     static int bytesToWord(int index, byte[] mem) {

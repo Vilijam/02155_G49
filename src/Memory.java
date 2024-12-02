@@ -10,6 +10,12 @@ public class Memory {
         }
     }
 
+    public void write(int address, byte[] data) {
+        for (int i = 0; i < data.length; i++) {
+            memory[address+i] = data[i];
+        }
+    }
+
     public byte readByte(int address) {
         return memory[address];
     }
